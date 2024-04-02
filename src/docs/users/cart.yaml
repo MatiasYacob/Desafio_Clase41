@@ -1,0 +1,178 @@
+openapi: 3.0.0
+info:
+  title: Documentación de la API de Productos
+  description: Documentación de la API para gestionar productos.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo
+tags:
+  - name: Cart
+    description: Endpoints referidos al manejo del Carrito
+
+paths:
+  /api/carts/tickets/create:
+    post:
+      summary: Crear un nuevo ticket
+      description: Crea un nuevo ticket para el usuario y lo envía por Email, borra el contenido del Carrito
+      tags: [Cart]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Ticket'
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              example:
+                code: "TCKT123456"
+                purchase_datetime: "2024-03-27T12:00:00Z"
+                amount: 1
+                purchaser: "usuario123"
+        '500':
+          description: Error interno
+
+  /api/cart/{productId}:
+    post:
+      summary: Agregar producto al carrito
+      description: Agrega un producto al carrito de compras.
+      tags:
+        - Cart
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          description: ID del producto a agregar al carrito
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+            example:
+              name: "Camisa"
+              price: 29.99
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              example:
+                message: "Producto agregado al carrito exitosamente"
+        '500':
+          description: Error interno
+
+    delete:
+      summary: Eliminar producto del carrito
+      description: Elimina un producto del carrito de compras.
+      tags:
+        - Cart
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          description: ID del producto a eliminar del carrito
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+            example:
+              name: "Camisa"
+              price: 29.99
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              example:
+                message: "Producto eliminado del carrito exitosamente"
+        '500':
+          description: Error interno
+
+components:
+  schemas:
+    Ticket:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Código único del ticket (Auto Generado).
+        purchase_datetime:
+          type: string
+          format: date-time
+          description: Fecha y hora de la compra del ticket.
+        amount:
+          type: number
+          description: Cantidad del ticket.
+        purchaser:
+          type: string
+          description: Comprador del ticket.
+      required:
+        - amount
+        - purchaser
+      example:
+        code: "TCKT123456"
+        purchase_datetime: "2024-03-27T12:00:00Z"
+        amount: 1
+        purchaser: "usuario123"
+    Product:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Nombre del producto.
+        price:
+          type: number
+          description: Precio del producto.
+      required:
+        - name
+        - price
+      example:
+        name: "Camisa"
+        price: 29.99
+    Cart:
+      type: object
+      properties:
+        user:
+          type: string
+          description: ID del usuario dueño del carrito.
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: string
+                description: ID del producto en el carrito.
+              quantity:
+                type: integer
+                description: Cantidad del producto en el carrito.
+              name:
+                type: string
+                description: Nombre del producto en el carrito.
+              price:
+                type: number
+                description: Precio del producto en el carrito.
+      required:
+        - user
+        - products
+      example:
+        user: "usuario123"
+        products:
+          - productId: "1234567890"
+            quantity: 2
+            name: "Camisa"
+            price: 29.99
+          - productId: "0987654321"
+            quantity: 1
+            name: "Pantalón"
+            price: 39.99

@@ -1,0 +1,163 @@
+openapi: 3.0.0
+info:
+  title: Documentación de la API de Productos
+  description: Documentación de la API para gestionar productos.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo
+tags:
+  - name: Product
+    description: Endpoints referidos al manejo de los productos
+
+paths:
+  /api/product:
+    post:
+      tags: [Product]
+      summary: Agregar un nuevo producto
+      description: >
+        Agrega un nuevo producto al sistema. Para agregar un nuevo producto, envía una solicitud POST con un objeto JSON que contenga los detalles del producto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        "201":
+          description: Producto agregado exitosamente
+          content:
+            application/json:
+              example:
+                message: "Producto agregado correctamente"
+                product:
+                  title: "Camiseta"
+                  description: "Camiseta de algodón de alta calidad"
+                  price: 29.99
+                  thumbnails: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
+                  code: "ABC-123"
+                  stock: 100
+                  status: true
+                  owner: "admin"
+        "403":
+          description: Problemas de autenticación o autorización
+        "500":
+          description: Problemas internos del servidor
+
+    get:
+      tags: [Product]
+      summary: Obtiene los Productos Paginados
+      description: >
+        Obtiene todos los productos disponibles en el sistema ya paginados y devuelve el contenido del HTML que renderiza el HBS de Realtimeproducts.
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Número de página
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          description: Cantidad máxima de productos por página
+      responses:
+        "200":
+          description: Lista de productos obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        "500":
+          description: Problemas internos del servidor
+
+  /api/product/products:
+    get:
+      tags: [Product]
+      summary: Obtiene Todos los productos de la BD.
+      description: >
+        Trae un Json con todos los productos desde la base de datos.
+      responses:
+        "200":
+          description: Productos obtenidos exitosamente
+        "401":
+          description: No autorizado
+        "404":
+          description: Productos no encontrado
+  /api/product/{productId}:
+    delete:
+      tags: [Product]
+      summary: Eliminar un producto de la BD
+      description: >
+        Elimina un producto de la BD utilizando el ID del producto.
+      parameters:
+        - in: path
+          name: productId
+          required: true
+          description: ID del producto a eliminar
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Producto eliminado exitosamente
+        "401":
+          description: No autorizado para eliminar el producto
+        "404":
+          description: Producto no encontrado
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Título del producto. Este campo debe contener el nombre del producto de manera descriptiva y clara.
+          minLength: 1
+          maxLength: 100
+          example: "Camiseta"
+        description:
+          type: string
+          description: Descripción detallada del producto. Proporciona información adicional sobre el producto, como características, materiales, etc.
+          maxLength: 500
+          example: "Camiseta de algodón de alta calidad"
+        price:
+          type: number
+          format: double
+          minimum: 0.01  
+          description: Precio del producto. Asegúrate de no proporcionar un valor cero.
+          example: 29.99
+        thumbnails:
+          type: array
+          items:
+            type: string
+          description: Lista de URLs de las imágenes del producto. Proporciona una o más URLs que apunten a las imágenes del producto.
+          example: ["https://example.com/image1.jpg", "https://example.com/image2.jpg"]
+        code:
+          type: string
+          description: Código único del producto.
+          example: "ABC-123"
+        stock:
+          type: integer
+          minimum: 1  
+          description: Cantidad en stock del producto. Asegúrate de proporcionar un valor mayor que cero.
+          example: 100
+        status:
+          type: boolean
+          description: Estado del producto. Especifica si el producto está activo (true) o inactivo (false).
+          example: true
+        owner:
+          type: string
+          description: Propietario del producto. Este campo puede ser útil para rastrear quién agregó o modificó el producto.
+          example: "admin"
+      required:
+        - title
+        - price
+        - thumbnails
+        - code
+        - stock
